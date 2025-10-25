@@ -12,6 +12,9 @@ import theme from "assets/theme";
 import DefaultNavbar from "./examples/Navbars/DefaultNavbar";
 import routes from "routes";
 
+// Hero Section
+import HeroSection from "./components/HeroSection";
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -26,22 +29,7 @@ function App() {
             color: "info",
           }}
         />
-        <div className="App">
-          <header className="App-header">
-            <img src={logo} className="App-logo" alt="logo" />
-            <p>
-              Edit <code>src/App.js</code> and save to reload.
-            </p>
-            <a
-              className="App-link"
-              href="https://reactjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn React
-            </a>
-          </header>
-        </div>
+        <HeroSection />
     </ThemeProvider>
   );
 }
