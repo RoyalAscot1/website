@@ -1,5 +1,7 @@
-import logo from './logo.svg';
 import './App.css';
+
+// Routing
+import { Routes, Route } from "react-router-dom";
 
 // @mui material components
 import { ThemeProvider } from "@mui/material/styles";
@@ -11,9 +13,6 @@ import theme from "assets/theme";
 // Material Kit Navbar
 import DefaultNavbar from "./examples/Navbars/DefaultNavbar";
 import routes from "routes";
-
-// Hero Section
-import HeroSection from "./components/HeroSection";
 
 function App() {
   return (
@@ -29,7 +28,11 @@ function App() {
             color: "info",
           }}
         />
-        <HeroSection />
+        <Routes>
+          {routes.map(({ route, component }) => (
+            <Route exact path={route} element={component} key={route} />
+          ))}
+        </Routes>
     </ThemeProvider>
   );
 }
