@@ -15,26 +15,36 @@ import DefaultNavbar from "./examples/Navbars/DefaultNavbar";
 import routes from "routes";
 
 function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-        <DefaultNavbar
-          routes={routes}
-          brand={"hello"}
-          action={{
-            type: "external",
-            route: "https://example.com",
-            label: "Sign Up",
-            color: "info",
-          }}
-        />
-        <Routes>
-          {routes.map(({ route, component }) => (
-            <Route exact path={route} element={component} key={route} />
-          ))}
-        </Routes>
-    </ThemeProvider>
-  );
+	// Parse both top-level and collapsed routes
+	const getRoutes = (allRoutes) =>
+		allRoutes.map((route) => {
+		if (route.collapse) {
+			return getRoutes(route.collapse);
+		}
+		if (route.route) {
+			return <Route exact path={route.route} element={route.component} key={route.key} />;
+		}
+		return null;
+    });
+
+  	return (
+		<ThemeProvider theme={theme}>
+			<CssBaseline />
+				<DefaultNavbar
+					routes={routes}
+					brand={"hello"}
+					action={{
+						type: "external",
+						route: "https://example.com",
+						label: "Sign Up",
+						color: "info",
+					}}
+				/>
+			<Routes>
+				{getRoutes(routes)}
+			</Routes>
+		</ThemeProvider>
+	);
 }
 
 export default App;
