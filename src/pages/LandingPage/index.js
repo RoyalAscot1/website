@@ -1,10 +1,9 @@
 import React from "react";
-import MKBox from "../components/MKBox";         // Material Kit Box
-import MKTypography from "../components/MKTypography"; // Material Kit Typography
-import MKButton from "../components/MKButton";
-import Container from "@mui/material/Container";
+import MKBox from "../../components/MKBox";         // Material Kit Box
+import MKTypography from "../../components/MKTypography"; // Material Kit Typography
+import MKButton from "../../components/MKButton";
 
-const HeroSection = () => {
+const LandingPage = () => {
     return (
         <MKBox
             minHeight="100vh"
@@ -42,4 +41,4 @@ const HeroSection = () => {
     );
 };
 
-export default HeroSection;
+export default LandingPage;
