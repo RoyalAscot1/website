@@ -2,6 +2,7 @@
 import LandingPage from "pages/LandingPage";
 import About from "pages/About";
 import InvestmentAdvisor from "pages/InvestmentAdvisor";
+import Careers from "pages/Careers";
 
 const routes = [
 	{ name: "Home", route: "/", component: <LandingPage /> },
@@ -16,7 +17,7 @@ const routes = [
 			}
 		]  
 	},
-  	{ name: "Careers", route: "/careers" },
+  	{ name: "Careers", route: "/careers", component: <Careers /> },
 ];
 
 export default routes;
