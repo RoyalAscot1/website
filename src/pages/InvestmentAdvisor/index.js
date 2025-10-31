@@ -38,10 +38,26 @@ function InvestmentAdvisor() {
 		setSurveyAnswers((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleSurveySubmit = () => {
+	const handleSurveySubmit = async () => {
 		console.log("CSV:", file);
 		console.log("Survey:", surveyAnswers);
-		// PASS TO BACKEND AND DATABASE LATER
+		
+		try {
+			// Build the form to be sent to the backend
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
+			
+			const res = await fetch("http://localhost:8000/upload", {
+				method: "POST",
+				body: formData
+			});
+
+			const data = await res.json();
+			console.log("Server response:", data)
+		} catch (err) {
+			console.log("Error:", err);
+		}
 	};
 
 	return (
