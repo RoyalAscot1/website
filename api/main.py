@@ -1,14 +1,16 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import pandas as pd
 import io
 import json
 
 # Import PostgreSQL database
 from database import database, engine, metadata
-from models import investments
+from models import investments, surveys
 metadata.create_all(engine)
+
+# Import data schemas
+from schemas import InvestmentIn, SurveyIn
 
 app = FastAPI(title="Investment Advisor API")
 
@@ -51,11 +53,6 @@ async def upload_data(file: UploadFile = File(...),
         "survey": survey_data,
     }
 
-class InvestmentIn(BaseModel):
-    name: str
-    risk_level: str
-    expected_return: float
-
 @app.post("/investments/")
 async def create_investment(investment: InvestmentIn):
     query = investments.insert().values(**investment.dict())
@@ -65,4 +62,15 @@ async def create_investment(investment: InvestmentIn):
 @app.get("/investments/")
 async def get_investments():
     query = investments.select()
+    return await database.fetch_all(query)
+
+@app.post("/surveys/")
+async def create_survey(survey: SurveyIn):
+    query = surveys.insert().values(**survey.dict())
+    record_id = await database.execute(query)
+    return {**survey.dict(), "id": record_id}
+
+@app.get("/surveys/")
+async def get_surveys():
+    query = surveys.select()
     return await database.fetch_all(query)
