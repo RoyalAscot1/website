@@ -5,7 +5,20 @@ import pandas as pd
 import io
 import json
 
+# Import PostgreSQL database
+from database import database, engine, metadata
+from models import investments
+metadata.create_all(engine)
+
 app = FastAPI(title="Investment Advisor API")
+
+@app.on_event("startup")
+async def startup():
+    await database.connect()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await database.disconnect()
 
 # React frontend
 origins = ["http://localhost:3000", "https://localhost:3000"]
@@ -16,14 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-# Mock database: CHANGE LATER
-SURVEYS = []
-RECOMMENDATIONS = [
-    "A, B, C",
-    "D, E, F",
-    "G, H, I"
-]
 
 @app.get("/")
 async def root():
@@ -46,29 +51,18 @@ async def upload_data(file: UploadFile = File(...),
         "survey": survey_data,
     }
 
-# Survey format
-class Survey(BaseModel): # keep surveys a simple string for now
-    content: str
+class InvestmentIn(BaseModel):
+    name: str
+    risk_level: str
+    expected_return: float
 
-# Post surveys about user recommendation
-@app.post("/survey")
-async def submit_survey(survey: Survey):
-    survey_id = len(SURVEYS)
-    entry = {"id": survey_id, "content": survey}
-    SURVEYS.append(entry)
-    return {"survey_id": survey_id, "summary": entry}
+@app.post("/investments/")
+async def create_investment(investment: InvestmentIn):
+    query = investments.insert().values(**investment.dict())
+    record_id = await database.execute(query)
+    return {**investment.dict(), "id": record_id}
 
-# Get recommendations depending on input factors
-@app.get("/recommendations")
-async def get_recommendations(risk: str): # keep risk a simple string for now
-    # write logic to decide recommendations + recommendation format later
-    if risk == "low":
-        recommendation = RECOMMENDATIONS[0]
-    elif risk == "medium":
-        recommendation = RECOMMENDATIONS[1]
-    elif risk == "high":
-        recommendation = RECOMMENDATIONS[2]
-    else:
-        recommendation = "Invalid risk value"
-
-    return {"recommendation": recommendation}
+@app.get("/investments/")
+async def get_investments():
+    query = investments.select()
+    return await database.fetch_all(query)
