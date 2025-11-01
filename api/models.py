@@ -9,3 +9,11 @@ investments = Table(
     Column("risk_level", String(50)),
     Column("expected_return", Float),
 )
+
+surveys = Table(
+    "surveys",
+    metadata,
+    Column("id", Integer, primary_key=True),
+    Column("riskTolerance", String),
+    Column("investmentHorizon", String),
+)
