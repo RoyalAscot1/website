@@ -46,10 +46,18 @@ async def upload_data(file: UploadFile = File(...),
 
     survey_data = json.loads(surveyAnswers)
     print(survey_data)
+    riskTolerance = survey_data.get("riskTolerance")
+    investmentHorizon = survey_data.get("investmentHorizon")
+    query = surveys.insert().values(
+        riskTolerance=riskTolerance,
+        investmentHorizon=investmentHorizon
+    )
+    survey_id = await database.execute(query)
 
     return {
-        "message": "200 OK",
+        "message": "Inserted survey data ONLY",
         "file": file,
+        "survey_id": survey_id,
         "survey": survey_data,
     }
 
