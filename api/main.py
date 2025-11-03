@@ -37,28 +37,35 @@ app.add_middleware(
 async def root():
     return {"message": "API online"}
 
-# Get investment names from Yahoo Finance API
-# Takes a ticker symbol and returns the name
-# Returns None if no associated name found
+# Yahoo Finance helper functions
 def get_investment_name(ticker):
     try:
         stock = yf.Ticker(ticker) 
         info = stock.info
         return info.get("shortName") or info.get("longName") or ticker
     except Exception:
+        return ticker
+
+def get_current_price(ticker):
+    try:
+        stock = yf.Ticker(ticker) 
+        info = stock.info
+        return info.get("regularMarketPrice") or info.get("previousClose")
+    except Exception:
         return None
 
 @app.post("/upload")
 async def upload_data(file: UploadFile = File(...), surveyAnswers: str = Form(...)):
     # Handle CSV of investment snapshot
-    # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice, CurrentPrice
+    # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
     df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+    df["InvestmentName"] = df["TickerSymbol"].apply(get_investment_name)
+    df["CurrentPrice"] = df["TickerSymbol"].apply(get_current_price)
     df["TotalValue"] = df["QuantityHeld"] * df["CurrentPrice"]
     df["UnrealizedGainLoss"] = (df["CurrentPrice"] - df["AveragePurchasePrice"]) * df["QuantityHeld"]
     df["Currency"] = "USD"  # default currency
     df["AssetType"] = "Stock"  # infer dynamically later
-    df["InvestmentName"] = df["TickerSymbol"].apply(get_investment_name)
     print(df)
 
     # Upload df into investments table
