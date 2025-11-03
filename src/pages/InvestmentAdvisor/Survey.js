@@ -8,7 +8,7 @@ import TextField from "@mui/material/TextField";
 function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted }) {
     return (
         <MKBox
-            minHeight="40vh"
+            minHeight="50vh"
             display="flex"
             alignItems="center"
             justifyContent="center"
