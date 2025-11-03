@@ -3,6 +3,7 @@ import MKBox from "../../components/MKBox";
 import Container from "@mui/material/Container";
 import UploadCSV from "./UploadCSV";
 import Survey from "./Survey";
+import RecommendationCard from "./RecommendationCard";
 
 function InvestmentAdvisor() {
 	const [isMounted, setIsMounted] = useState(false);
@@ -10,12 +11,15 @@ function InvestmentAdvisor() {
 		setIsMounted(true);
 	}, []);
 
+	// Important data to remember
 	const [file, setFile] = useState(null);
 	const [step, setStep] = useState(1);
 	const [surveyAnswers, setSurveyAnswers] = useState({
-		riskTolerance: "",
-		investmentHorizon: "",
+		riskTolerance: null,
+		investmentHorizon: null,
 	});
+	const [surveySubmitted, setSurveySubmitted] = useState(false);
+	const [recommendations, setRecommendations] = useState([]);
 
 	const handleFileChange = (e) => {
 		const uploadedFile = e.target.files[0];
@@ -58,6 +62,15 @@ function InvestmentAdvisor() {
 		} catch (err) {
 			console.log("Error:", err);
 		}
+		setSurveySubmitted(true);
+
+		setTimeout(() => {
+			setIsMounted(false);
+			setTimeout(() => {
+				setStep(3);
+				setIsMounted(true);
+			}, 500);
+		}, 2000);
 	};
 
 	return (
@@ -87,18 +100,28 @@ function InvestmentAdvisor() {
 		>
 		<Container maxWidth="sm">
 			{step === 1 && (
-			<UploadCSV
-				file={file}
-				onFileChange={handleFileChange}
-				onUploadClick={handleUploadClick}
-			/>
+				<UploadCSV
+					file={file}
+					onFileChange={handleFileChange}
+					onUploadClick={handleUploadClick}
+				/>
 			)}
 			{step === 2 && (
-			<Survey
-				surveyAnswers={surveyAnswers}
-				onSurveyChange={handleSurveyChange}
-				onSurveySubmit={handleSurveySubmit}
-			/>
+				<Survey
+					surveyAnswers={surveyAnswers}
+					onSurveyChange={handleSurveyChange}
+					onSurveySubmit={handleSurveySubmit}
+					surveySubmitted={surveySubmitted}
+				/>
+			)}
+			{step === 3 && (
+				<RecommendationCard investment={{
+					name: "hello",
+					type: "test",
+					risk_level: "high",
+					expected_return: "0.6"
+				}}
+				/>
 			)}
 		</Container>
 		</MKBox>
