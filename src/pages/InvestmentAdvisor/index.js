@@ -12,37 +12,51 @@ function InvestmentAdvisor() {
 	useEffect(() => {
 		setIsMounted(true);
 	}, []);
+	const [step, setStep] = useState(1);
 
 	// Important data to remember
 	const [file, setFile] = useState(null);
-	const [step, setStep] = useState(1);
 	const [surveyAnswers, setSurveyAnswers] = useState({
 		riskTolerance: null,
 		investmentHorizon: null,
 	});
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
+	const [csvUploaded, setCsvUploaded] = useState(false);
 	const [recommendations, setRecommendations] = useState([]);
 
 	const [openModal, setOpenModal] = useState(false);
-	const [investmentsData, setInvestmentsData] = useState([]);
 
 	const handleOpenModal = () => setOpenModal(true);
 	const handleCloseModal = () => setOpenModal(false);
 
-	const handleFileChange = (e) => {
+	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
+		if (!uploadedFile) return;
 		setFile(uploadedFile);
-		setTimeout(() => {
-			setIsMounted(false);
-			setTimeout(() => {
-				setStep(2);
-				setIsMounted(true);
-			}, 500);
-		}, 2000);
-	};
+		console.log("CSV:", uploadedFile);
+		try {
+			// Build the form to be sent to the backend
+			const formData = new FormData();
+			formData.append("file", uploadedFile);
+			
+			const res = await fetch("http://localhost:8000/upload-CSV", {
+				method: "POST",
+				body: formData
+			});
+			const data = await res.json();
+			console.log("CSV uploaded:", data)
+			setCsvUploaded(true);
 
-	const handleUploadClick = () => {
-		document.getElementById("csvInput").click();
+			setTimeout(() => {
+				setIsMounted(false);
+				setTimeout(() => {
+					setStep(2);
+					setIsMounted(true);
+				}, 500);
+			}, 2000);
+		} catch (err) {
+			console.log("Error:", err);
+		}
 	};
 
 	const handleSurveyChange = (e) => {
@@ -51,34 +65,31 @@ function InvestmentAdvisor() {
 	};
 
 	const handleSurveySubmit = async () => {
-		console.log("CSV:", file);
 		console.log("Survey:", surveyAnswers);
 		
 		try {
 			// Build the form to be sent to the backend
 			const formData = new FormData();
-			formData.append("file", file);
 			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
 			
-			const res = await fetch("http://localhost:8000/upload", {
+			const res = await fetch("http://localhost:8000/upload-survey", {
 				method: "POST",
 				body: formData
 			});
-
 			const data = await res.json();
-			console.log("Server response:", data)
+			console.log("Survey uploaded:", data);
+			setSurveySubmitted(true);
+
+			setTimeout(() => {
+				setIsMounted(false);
+				setTimeout(() => {
+					setStep(3);
+					setIsMounted(true);
+				}, 500);
+			}, 2000);
 		} catch (err) {
 			console.log("Error:", err);
 		}
-		setSurveySubmitted(true);
-
-		setTimeout(() => {
-			setIsMounted(false);
-			setTimeout(() => {
-				setStep(3);
-				setIsMounted(true);
-			}, 500);
-		}, 2000);
 	};
 
 	return (
@@ -118,7 +129,6 @@ function InvestmentAdvisor() {
 				<UploadCSV
 					file={file}
 					onFileChange={handleFileChange}
-					onUploadClick={handleUploadClick}
 				/>
 			)}
 			{step === 2 && (
@@ -144,7 +154,6 @@ function InvestmentAdvisor() {
 		<DatabaseModal
 			open={openModal}
 			onClose={handleCloseModal}
-			data={investmentsData}
 		/>
 		</Container>
 		</MKBox>
