@@ -4,10 +4,16 @@ from database import metadata
 investments = Table(
     "investments",
     metadata,
-    Column("id", Integer, primary_key=True),
-    Column("name", String(100)),
-    Column("risk_level", String(50)),
-    Column("expected_return", Float),
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("TickerSymbol", String),
+    Column("InvestmentName", String, nullable=True),
+    Column("AssetType", String),
+    Column("QuantityHeld", Float),
+    Column("AveragePurchasePrice", Float),
+    Column("CurrentPrice", Float),
+    Column("TotalValue", Float),
+    Column("UnrealizedGainLoss", Float),
+    Column("Currency", String)
 )
 
 surveys = Table(
