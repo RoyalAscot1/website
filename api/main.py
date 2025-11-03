@@ -54,8 +54,8 @@ def get_current_price(ticker):
     except Exception:
         return None
 
-@app.post("/upload")
-async def upload_data(file: UploadFile = File(...), surveyAnswers: str = Form(...)):
+@app.post("/upload-CSV")
+async def upload_csv(file: UploadFile = File(...)):
     # Handle CSV of investment snapshot
     # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
@@ -72,6 +72,13 @@ async def upload_data(file: UploadFile = File(...), surveyAnswers: str = Form(..
     records = df.to_dict(orient="records")
     await database.execute_many(query=investments.insert(), values=records)
 
+    return {
+        "message": "Uploaded investment snapshot",
+        "file": file,
+    }
+
+@app.post("/upload-survey")
+async def upload_survey(surveyAnswers: str = Form(...)):
     # Handle survey data
     # surveyAnswers is a form containing TWO strings, riskTolerance and investmentHorizon
     survey_data = json.loads(surveyAnswers)
@@ -82,28 +89,27 @@ async def upload_data(file: UploadFile = File(...), surveyAnswers: str = Form(..
     survey_id = await database.execute(query)
 
     return {
-        "message": "Inserted investment snapshot and survey info",
-        "file": file,
+        "message": "Uploaded survey info",
         "survey_id": survey_id,
         "survey": survey_data,
     }
 
-@app.post("/investments/")
-async def create_investment(investment: InvestmentIn):
-    query = investments.insert().values(**investment.dict())
-    record_id = await database.execute(query)
-    return {**investment.dict(), "id": record_id}
+# @app.post("/investments/")
+# async def create_investment(investment: InvestmentIn):
+#    query = investments.insert().values(**investment.dict())
+#    record_id = await database.execute(query)
+#    return {**investment.dict(), "id": record_id}
 
 @app.get("/investments/")
 async def get_investments():
     query = investments.select()
     return await database.fetch_all(query)
 
-@app.post("/surveys/")
-async def create_survey(survey: SurveyIn):
-    query = surveys.insert().values(**survey.dict())
-    record_id = await database.execute(query)
-    return {**survey.dict(), "id": record_id}
+# @app.post("/surveys/")
+# async def create_survey(survey: SurveyIn):
+#    query = surveys.insert().values(**survey.dict())
+#    record_id = await database.execute(query)
+#    return {**survey.dict(), "id": record_id}
 
 @app.get("/surveys/")
 async def get_surveys():
