@@ -8,7 +8,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 function UploadCSV({ file, onFileChange, onUploadClick }) {
     return (
         <MKBox
-            minHeight="100vh"
+            minHeight="40vh"
             display="flex"
             alignItems="center"
             justifyContent="center"
