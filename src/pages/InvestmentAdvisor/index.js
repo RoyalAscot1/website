@@ -26,40 +26,7 @@ function InvestmentAdvisor() {
 	const [openModal, setOpenModal] = useState(false);
 	const [investmentsData, setInvestmentsData] = useState([]);
 
-	const sampleData = [
-	{
-		name: "Apple Inc. (AAPL)",
-		type: "Stock",
-		risk_level: "High",
-		expected_return: "12.5%",
-	},
-	{
-		name: "Vanguard S&P 500 ETF (VOO)",
-		type: "ETF",
-		risk_level: "Medium",
-		expected_return: "8.2%",
-	},
-	{
-		name: "US Treasury Bonds",
-		type: "Bond",
-		risk_level: "Low",
-		expected_return: "3.1%",
-	},
-	];
-
-
-	const handleOpenModal = async () => {
-		setOpenModal(true);
-		try {
-			//const res = await fetch("http://localhost:8000/investments"); // your backend
-			//const data = await res.json();
-			console.log("Opening modal");
-			setInvestmentsData(sampleData);
-		} catch (err) {
-			console.log("Error fetching investments:", err);
-		}
-	};
-
+	const handleOpenModal = () => setOpenModal(true);
 	const handleCloseModal = () => setOpenModal(false);
 
 	const handleFileChange = (e) => {
