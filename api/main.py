@@ -7,7 +7,7 @@ import yfinance as yf
 
 # Import PostgreSQL database
 from database import database, engine, metadata
-from models import investments, surveys
+from models import investment_snapshots, investments, surveys
 metadata.create_all(engine)
 
 # Import data schemas
@@ -68,13 +68,20 @@ async def upload_csv(file: UploadFile = File(...)):
     df["AssetType"] = "Stock"  # infer dynamically later
     print(df)
 
+    # Create new snapshot record
+    snapshot_query = investment_snapshots.insert().values(description="No description")
+    snapshot_id = await database.execute(snapshot_query)
+
     # Upload df into investments table
     records = df.to_dict(orient="records")
+    for record in records:
+        record["snapshot_id"] = snapshot_id # Assign the returned snapshot id
     await database.execute_many(query=investments.insert(), values=records)
 
     return {
         "message": "Uploaded investment snapshot",
-        "file": file,
+        "snapshot_id": snapshot_id,
+        "records_inserted": len(records)
     }
 
 @app.post("/upload-survey")
@@ -100,10 +107,20 @@ async def upload_survey(surveyAnswers: str = Form(...)):
 #    record_id = await database.execute(query)
 #    return {**investment.dict(), "id": record_id}
 
-@app.get("/investments/")
-async def get_investments():
-    query = investments.select()
+@app.get("/snapshots/")
+async def get_snapshots():
+    query = investment_snapshots.select().order_by(investment_snapshots.c.uploaded_at.desc())
     return await database.fetch_all(query)
+
+@app.get("/snapshots/{snapshot_id}")
+async def get_snapshot_investments(snapshot_id: int):
+    query = investments.select().where(investments.c.snapshot_id == snapshot_id)
+    return await database.fetch_all(query)
+
+# @app.get("/investments/")
+# async def get_investments():
+#    query = investments.select()
+#    return await database.fetch_all(query)
 
 # @app.post("/surveys/")
 # async def create_survey(survey: SurveyIn):
