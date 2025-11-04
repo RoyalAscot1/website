@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MKBox from "../../components/MKBox";
 import MKButton from "../../components/MKButton";
 import Container from "@mui/material/Container";
 import UploadCSV from "./UploadCSV";
 import Survey from "./Survey";
 import RecommendationCard from "./RecommendationCard";
-import DatabaseModal from "./DatabaseModal";
 
 function InvestmentAdvisor() {
+	const navigate = useNavigate();
 	const [isMounted, setIsMounted] = useState(false);
 	useEffect(() => {
 		setIsMounted(true);
@@ -23,11 +24,6 @@ function InvestmentAdvisor() {
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
 	const [recommendations, setRecommendations] = useState([]);
-
-	const [openModal, setOpenModal] = useState(false);
-
-	const handleOpenModal = () => setOpenModal(true);
-	const handleCloseModal = () => setOpenModal(false);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
@@ -53,7 +49,7 @@ function InvestmentAdvisor() {
 					setStep(2);
 					setIsMounted(true);
 				}, 500);
-			}, 2000);
+			}, 500);
 		} catch (err) {
 			console.log("Error:", err);
 		}
@@ -86,7 +82,7 @@ function InvestmentAdvisor() {
 					setStep(3);
 					setIsMounted(true);
 				}, 500);
-			}, 2000);
+			}, 500);
 		} catch (err) {
 			console.log("Error:", err);
 		}
@@ -148,13 +144,9 @@ function InvestmentAdvisor() {
 				}}
 				/>
 			)}
-			<MKButton color="secondary" onClick={handleOpenModal}>
-			View Investments in Database
-		</MKButton>
-		<DatabaseModal
-			open={openModal}
-			onClose={handleCloseModal}
-		/>
+			<MKButton color="secondary" onClick={() => navigate("/services/view-investments/")}>
+				View Investments in Database
+			</MKButton>
 		</Container>
 		</MKBox>
 		</MKBox>
