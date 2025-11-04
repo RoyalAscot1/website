@@ -10,6 +10,8 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
+import MKButton from "../../components/MKButton";
+import MKTypography from "components/MKTypography";
 
 const modalStyle = {
 	position: "absolute",
@@ -25,15 +27,19 @@ const modalStyle = {
 	p: 4,
 };
 
-function DatabaseModal({ open, onClose }) {
+function DatabaseModal({ open, onClose, snapshot }) {
 	const [data, setData] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 
 	useEffect(() => {
+		if (!open || !snapshot) return;
+		setLoading(true);
+		setError(null);
+		setData([]);
 		if (open) {
 			// Fetch from backend
-			fetch("http://localhost:8000/investments/")
+			fetch(`http://localhost:8000/snapshots/${snapshot.id}/`)
 				.then((res) => {
 					if (!res.ok) throw new Error("Failed to fetch investments");
 					return res.json();
@@ -42,14 +48,21 @@ function DatabaseModal({ open, onClose }) {
 				.catch((err) => setError(err.message))
 				.finally(() => setLoading(false));
 		}
-	}, [open]);
+	}, [open, snapshot]);
 
 	return (
 		<Modal open={open} onClose={onClose}>
 			<Box sx={modalStyle}>
-				<Typography variant="h5" mb={2}>
-					Investments Table
-				</Typography>
+				<MKTypography variant="h5">
+					Investment Snapshot — {new Date(snapshot.uploaded_at).toLocaleString(undefined, {
+											year: "numeric",
+											month: "long",
+											day: "numeric",
+											hour: "2-digit",
+											minute: "2-digit",
+											second: "2-digit",
+										})}
+				</MKTypography>
 
 				{loading ? (
 					<Box display="flex" justifyContent="center" alignItems="center" height="40vh">
