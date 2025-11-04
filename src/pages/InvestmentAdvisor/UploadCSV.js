@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useRef } from "react";
 import MKBox from "components/MKBox";
 import MKTypography from "components/MKTypography";
 import MKButton from "components/MKButton";
 import Paper from "@mui/material/Paper";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-function UploadCSV({ file, onFileChange, onUploadClick }) {
+function UploadCSV({ file, onFileChange }) {
+    const fileInputRef = useRef(null);
+
+    const handleChooseClick = () => {
+        fileInputRef.current.click(); // open file picker
+    };
+
     return (
         <MKBox
-            minHeight="100vh"
+            minHeight="40vh"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -23,18 +29,19 @@ function UploadCSV({ file, onFileChange, onUploadClick }) {
             </MKTypography>
 
             <input
-            id="csvInput"
-            type="file"
-            accept=".csv"
-            style={{ display: "none" }}
-            onChange={onFileChange}
+                id="csvInput"
+                type="file"
+                accept=".csv"
+                style={{ display: "none" }}
+                ref={fileInputRef}
+                onChange={onFileChange} // triggers upload immediately
             />
 
             <MKButton
-            color="info"
-            startIcon={<UploadFileIcon />}
-            onClick={onUploadClick}
-            sx={{ mb: 2 }}
+                color="info"
+                startIcon={<UploadFileIcon />}
+                onClick={handleChooseClick}
+                sx={{ mb: 2 }}
             >
             Choose CSV File
             </MKButton>

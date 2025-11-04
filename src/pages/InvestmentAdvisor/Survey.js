@@ -5,10 +5,10 @@ import MKButton from "components/MKButton";
 import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 
-function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit }) {
+function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted }) {
     return (
         <MKBox
-            minHeight="100vh"
+            minHeight="50vh"
             display="flex"
             alignItems="center"
             justifyContent="center"
@@ -36,9 +36,15 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit }) {
             sx={{ mb: 2 }}
             />
 
-            <MKButton color="info" onClick={onSurveySubmit}>
+            <MKButton color="info" onClick={onSurveySubmit} sx={{ mb: 2 }}>
             Submit Survey
             </MKButton>
+
+            {surveySubmitted && (
+                <MKTypography variant="body2" color="text.primary">
+                ✅ Survey uploaded successfully
+                </MKTypography>
+            )}
         </Paper>
         </MKBox>
     );
