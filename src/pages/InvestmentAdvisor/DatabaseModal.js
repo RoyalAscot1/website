@@ -90,6 +90,7 @@ function DatabaseModal({ open, onClose, snapshot }) {
 									<TableCell>Unrealized Gain or Loss</TableCell>
 									<TableCell>Asset Type</TableCell>
 									<TableCell>Currency</TableCell>
+									<TableCell>Beta</TableCell>
 								</TableRow>
 							</TableHead>
 							<TableBody>
@@ -98,12 +99,13 @@ function DatabaseModal({ open, onClose, snapshot }) {
 										<TableCell>{inv.TickerSymbol}</TableCell>
 										<TableCell>{inv.InvestmentName}</TableCell>
 										<TableCell>{inv.QuantityHeld}</TableCell>
-										<TableCell>{inv.AveragePurchasePrice}</TableCell>
-										<TableCell>{inv.CurrentPrice}</TableCell>
-										<TableCell>{inv.TotalValue}</TableCell>
-										<TableCell>{inv.UnrealizedGainLoss}</TableCell>
+										<TableCell>{Number(inv.AveragePurchasePrice).toFixed(2)}</TableCell>
+										<TableCell>{Number(inv.CurrentPrice).toFixed(2)}</TableCell>
+										<TableCell>{Number(inv.TotalValue).toFixed(2)}</TableCell>
+										<TableCell>{Number(inv.UnrealizedGainLoss).toFixed(2)}</TableCell>
 										<TableCell>{inv.AssetType}</TableCell>
 										<TableCell>{inv.Currency}</TableCell>
+										<TableCell>{inv.Beta}</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
