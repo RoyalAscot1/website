@@ -10,8 +10,8 @@ from database import database, engine, metadata
 from models import investment_snapshots, investments, surveys
 metadata.create_all(engine)
 
-# Import data schemas
-from schemas import InvestmentIn, SurveyIn
+# Import data schemas - used only with direct data injections
+# from schemas import InvestmentIn, SurveyIn
 
 app = FastAPI(title="Investment Advisor API")
 
@@ -96,12 +96,15 @@ async def upload_csv(file: UploadFile = File(...)):
 @app.post("/upload-survey")
 async def upload_survey(surveyAnswers: str = Form(...)):
     # Handle survey data
-    # surveyAnswers is a form containing TWO strings, riskTolerance and investmentHorizon
+    # surveyAnswers is a form containing FOUR integers
     survey_data = json.loads(surveyAnswers)
     print(survey_data)
-    riskTolerance = survey_data.get("riskTolerance")
-    investmentHorizon = survey_data.get("investmentHorizon")
-    query = surveys.insert().values(riskTolerance=riskTolerance, investmentHorizon=investmentHorizon)
+    query = surveys.insert().values(
+        riskTolerance = survey_data.get("riskTolerance"),
+        investmentHorizon = survey_data.get("investmentHorizon"),
+        lossCapacity = survey_data.get("lossCapacity"),
+        investmentGoal = survey_data.get("investmentGoal"),
+    )
     survey_id = await database.execute(query)
 
     return {
