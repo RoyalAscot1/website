@@ -56,8 +56,9 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted
             display="flex"
             alignItems="center"
             justifyContent="center"
+            mt={8}
         >
-            <Paper elevation={4} sx={{ p: 4, borderRadius: "20px", width: "420px" }}>
+            <Paper elevation={4} sx={{ p: 4, pb: 2, borderRadius: "20px", width: "420px", mb: 2}}>
                 <MKTypography variant="h3" mb={3} textAlign="center">
                     Investment Survey
                 </MKTypography>
@@ -95,11 +96,10 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted
                     </MKBox>
                 ))}
 
-                <MKButton 
-                    color="info" 
-                    fullWidth 
-                    onClick={onSurveySubmit} 
-                    sx={{ mt: 2 }}
+                <MKButton
+                    color="info"
+                    onClick={onSurveySubmit}
+                    sx={{ mt: 2, py: 0.5, display: "block", mx: "auto" }}
                 >
                     Submit
                 </MKButton>
