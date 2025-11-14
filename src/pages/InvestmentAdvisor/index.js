@@ -18,8 +18,10 @@ function InvestmentAdvisor() {
 	// Important data to remember
 	const [file, setFile] = useState(null);
 	const [surveyAnswers, setSurveyAnswers] = useState({
-		riskTolerance: null,
-		investmentHorizon: null,
+		riskTolerance: "",
+		investmentHorizon: "",
+		lossCapacity: "",
+		investmentGoal: "",
 	});
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
