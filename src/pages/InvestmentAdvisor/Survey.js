@@ -50,6 +50,12 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted
         }
     ];
 
+    const allAnswered = questions.every(
+        (q) => surveyAnswers[q.key] !== undefined 
+        && surveyAnswers[q.key] !== null 
+        && surveyAnswers[q.key] !== ""
+    );
+
     return (
         <MKBox
             minHeight="60vh"
@@ -99,7 +105,8 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted
                 <MKButton
                     color="info"
                     onClick={onSurveySubmit}
-                    sx={{ mt: 2, py: 0.5, display: "block", mx: "auto" }}
+                    disabled={!allAnswered}
+                    sx={{ mt: 2, py: 0.5, display: "block", mx: "auto"  }}
                 >
                     Submit
                 </MKButton>
