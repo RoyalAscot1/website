@@ -22,7 +22,8 @@ investments = Table(
     Column("CurrentPrice", Float),
     Column("TotalValue", Float),
     Column("UnrealizedGainLoss", Float),
-    Column("Currency", String)
+    Column("Currency", String),
+    Column("Beta", Float)
 )
 
 surveys = Table(
