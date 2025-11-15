@@ -32,7 +32,7 @@ function ViewInvestments() {
     useEffect(() => {
         const fetchSnapshots = async () => {
             try {
-                const res = await fetch("http://localhost:8000/snapshots");
+                const res = await fetch("http://localhost:8000/snapshots/");
                 const data = await res.json();
                 setSnapshots(data);
             } catch (err) {
@@ -83,31 +83,39 @@ function ViewInvestments() {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {snapshots.map((snap, idx) => (
-                <TableRow key={idx}>
-                    <TableCell>{snap.id}</TableCell>
-                    <TableCell>
-                        {new Date(snap.uploaded_at).toLocaleString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                        })}
-                    </TableCell>
-                    <TableCell>{snap.description}</TableCell>
-                    <TableCell>
-                        <MKButton
-                            color="info"
-                            size="small"
-                            onClick={() => handleOpenModal(snap)}
-                        >
-                            View Details
-                        </MKButton>
-                    </TableCell>
-                </TableRow>
-                ))}
+                {snapshots.length === 0 ? (
+        <TableRow>
+            <TableCell colSpan={4} align="center">
+                No snapshots uploaded
+            </TableCell>
+        </TableRow>
+    ) : (
+        snapshots.map((snap, idx) => (
+            <TableRow key={idx}>
+                <TableCell>{snap.id}</TableCell>
+                <TableCell>
+                    {new Date(snap.uploaded_at).toLocaleString(undefined, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                    })}
+                </TableCell>
+                <TableCell>{snap.description}</TableCell>
+                <TableCell>
+                    <MKButton
+                        color="info"
+                        size="small"
+                        onClick={() => handleOpenModal(snap)}
+                    >
+                        View Details
+                    </MKButton>
+                </TableCell>
+            </TableRow>
+        ))
+    )}
             </TableBody>
             </Table>
         </TableContainer>
