@@ -22,13 +22,16 @@ investments = Table(
     Column("CurrentPrice", Float),
     Column("TotalValue", Float),
     Column("UnrealizedGainLoss", Float),
-    Column("Currency", String)
+    Column("Currency", String),
+    Column("Beta", Float)
 )
 
 surveys = Table(
     "surveys",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("riskTolerance", String),
-    Column("investmentHorizon", String),
+    Column("riskTolerance", Integer),        # 1–3
+    Column("investmentHorizon", Integer),    # 1–3
+    Column("lossCapacity", Integer),         # 1–3
+    Column("investmentGoal", Integer),       # 1–3
 )
