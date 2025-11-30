@@ -17,6 +17,8 @@ function InvestmentAdvisor() {
 
 	// Important data to remember
 	const [file, setFile] = useState(null);
+	const [snapshotId, setSnapshotId] = useState(null);
+	const [surveyId, setSurveyId] = useState(null);
 	const [surveyAnswers, setSurveyAnswers] = useState({
 		riskTolerance: "",
 		investmentHorizon: "",
@@ -25,7 +27,6 @@ function InvestmentAdvisor() {
 	});
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
-	const [recommendations, setRecommendations] = useState([]);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
@@ -44,6 +45,7 @@ function InvestmentAdvisor() {
 			const data = await res.json();
 			console.log("CSV uploaded:", data)
 			setCsvUploaded(true);
+			setSnapshotId(data.snapshot_id);
 
 			setTimeout(() => {
 				setIsMounted(false);
@@ -77,6 +79,7 @@ function InvestmentAdvisor() {
 			const data = await res.json();
 			console.log("Survey uploaded:", data);
 			setSurveySubmitted(true);
+			setSurveyId(data.survey_id);
 
 			setTimeout(() => {
 				setIsMounted(false);
@@ -138,13 +141,7 @@ function InvestmentAdvisor() {
 				/>
 			)}
 			{step === 3 && (
-				<RecommendationCard investment={{
-					name: "hello",
-					type: "test",
-					risk_level: "high",
-					expected_return: "0.6"
-				}}
-				/>
+				<RecommendationCard snapshotId={snapshotId} surveyId={surveyId} />
 			)}
 			<MKButton color="secondary" onClick={() => navigate("/services/view-investments/")}>
 				View Investments in Database
