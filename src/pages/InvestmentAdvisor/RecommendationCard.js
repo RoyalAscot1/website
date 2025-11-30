@@ -1,8 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import MKBox from "../../components/MKBox";
 import MKTypography from "../../components/MKTypography";
 
-function RecommendationCard({ investment }) {
+function RecommendationCard({ snapshotId, surveyId }) {
+    const [recommendation, setRecommendation] = useState("Loading recommendations...");
+    useEffect(() => {
+        if (!snapshotId || !surveyId) return;
+
+        console.log(snapshotId);
+        console.log(surveyId);
+        const fetchRecommendation = async () => {
+            try {
+                const formData = new FormData();
+                formData.append("input", JSON.stringify({ snapshotId, surveyId }));
+
+                const res = await fetch("http://localhost:8000/recommendations", {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await res.json();
+                setRecommendation(data.gemini_response);
+            } catch (error) {
+                console.error("Error fetching recommendation:", error);
+                setRecommendation("Failed to load recommendation.");
+            }
+        };
+        fetchRecommendation();
+    }, [snapshotId, surveyId]);
+
     return (
         <MKBox
             sx={{
@@ -15,17 +40,13 @@ function RecommendationCard({ investment }) {
             }}
         >
             <MKTypography variant="h6" fontWeight="bold">
-                {investment.name}
+                Investment Recommendations
             </MKTypography>
-            <MKTypography variant="body2">
-                Type: {investment.type}
-            </MKTypography>
-            <MKTypography variant="body2">
-                Risk: {investment.risk_level}
-            </MKTypography>
-            <MKTypography variant="body2">
-                Expected Return: {investment.expected_return}%
-            </MKTypography>
+            <MKBox sx={{ marginTop: "12px" }}>
+                <MKTypography variant="body2" fontStyle="italic">
+                    {recommendation}
+                </MKTypography>
+            </MKBox>
         </MKBox>
     );
 }
