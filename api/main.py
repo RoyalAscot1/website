@@ -1,17 +1,17 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import io
-import json
-import yfinance as yf
 
 # Import PostgreSQL database
 from database import database, engine, metadata
-from models import investments, surveys
-metadata.create_all(engine)
 
-# Import data schemas
-from schemas import InvestmentIn, SurveyIn
+# Routers
+from routers.upload_csv import router as upload_csv_router
+from routers.upload_survey import router as upload_survey_router
+from routers.snapshots import router as snapshots_router
+from routers.analyze import router as analyze_router
+from routers.recommendations import router as recommendations_router
+
+metadata.create_all(engine)
 
 app = FastAPI(title="Investment Advisor API")
 
@@ -33,79 +33,40 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+app.include_router(upload_csv_router)
+app.include_router(upload_survey_router)
+app.include_router(snapshots_router)
+app.include_router(analyze_router)
+app.include_router(recommendations_router)
+
 @app.get("/")
 async def root():
     return {"message": "API online"}
 
-# Yahoo Finance helper functions
-def get_investment_name(ticker):
-    try:
-        stock = yf.Ticker(ticker) 
-        info = stock.info
-        return info.get("shortName") or info.get("longName") or ticker
-    except Exception:
-        return ticker
+# Unused endpoints
+# ================
 
-def get_current_price(ticker):
-    try:
-        stock = yf.Ticker(ticker) 
-        info = stock.info
-        return info.get("regularMarketPrice") or info.get("previousClose")
-    except Exception:
-        return None
+# Import data schemas - used only with direct data injections
+# from schemas import InvestmentIn, SurveyIn
 
-@app.post("/upload")
-async def upload_data(file: UploadFile = File(...), surveyAnswers: str = Form(...)):
-    # Handle CSV of investment snapshot
-    # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
-    contents = await file.read()
-    df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
-    df["InvestmentName"] = df["TickerSymbol"].apply(get_investment_name)
-    df["CurrentPrice"] = df["TickerSymbol"].apply(get_current_price)
-    df["TotalValue"] = df["QuantityHeld"] * df["CurrentPrice"]
-    df["UnrealizedGainLoss"] = (df["CurrentPrice"] - df["AveragePurchasePrice"]) * df["QuantityHeld"]
-    df["Currency"] = "USD"  # default currency
-    df["AssetType"] = "Stock"  # infer dynamically later
-    print(df)
+# @app.post("/investments/")
+# async def create_investment(investment: InvestmentIn):
+#    query = investments.insert().values(**investment.dict())
+#    record_id = await database.execute(query)
+#    return {**investment.dict(), "id": record_id}
 
-    # Upload df into investments table
-    records = df.to_dict(orient="records")
-    await database.execute_many(query=investments.insert(), values=records)
+# @app.get("/investments/")
+# async def get_investments():
+#    query = investments.select()
+#    return await database.fetch_all(query)
 
-    # Handle survey data
-    # surveyAnswers is a form containing TWO strings, riskTolerance and investmentHorizon
-    survey_data = json.loads(surveyAnswers)
-    print(survey_data)
-    riskTolerance = survey_data.get("riskTolerance")
-    investmentHorizon = survey_data.get("investmentHorizon")
-    query = surveys.insert().values(riskTolerance=riskTolerance, investmentHorizon=investmentHorizon)
-    survey_id = await database.execute(query)
+# @app.post("/surveys/")
+# async def create_survey(survey: SurveyIn):
+#    query = surveys.insert().values(**survey.dict())
+#    record_id = await database.execute(query)
+#    return {**survey.dict(), "id": record_id}
 
-    return {
-        "message": "Inserted investment snapshot and survey info",
-        "file": file,
-        "survey_id": survey_id,
-        "survey": survey_data,
-    }
-
-@app.post("/investments/")
-async def create_investment(investment: InvestmentIn):
-    query = investments.insert().values(**investment.dict())
-    record_id = await database.execute(query)
-    return {**investment.dict(), "id": record_id}
-
-@app.get("/investments/")
-async def get_investments():
-    query = investments.select()
-    return await database.fetch_all(query)
-
-@app.post("/surveys/")
-async def create_survey(survey: SurveyIn):
-    query = surveys.insert().values(**survey.dict())
-    record_id = await database.execute(query)
-    return {**survey.dict(), "id": record_id}
-
-@app.get("/surveys/")
-async def get_surveys():
-    query = surveys.select()
-    return await database.fetch_all(query)
+# @app.get("/surveys/")
+# async def get_surveys():
+#    query = surveys.select()
+#    return await database.fetch_all(query)

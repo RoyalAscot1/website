@@ -1,36 +1,62 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import MKBox from "../../components/MKBox";
+import MKButton from "../../components/MKButton";
 import Container from "@mui/material/Container";
 import UploadCSV from "./UploadCSV";
 import Survey from "./Survey";
+import RecommendationCard from "./RecommendationCard";
 
 function InvestmentAdvisor() {
+	const navigate = useNavigate();
 	const [isMounted, setIsMounted] = useState(false);
 	useEffect(() => {
 		setIsMounted(true);
 	}, []);
-
-	const [file, setFile] = useState(null);
 	const [step, setStep] = useState(1);
+
+	// Important data to remember
+	const [file, setFile] = useState(null);
+	const [snapshotId, setSnapshotId] = useState(null);
+	const [surveyId, setSurveyId] = useState(null);
 	const [surveyAnswers, setSurveyAnswers] = useState({
 		riskTolerance: "",
 		investmentHorizon: "",
+		lossCapacity: "",
+		investmentGoal: "",
 	});
+	const [surveySubmitted, setSurveySubmitted] = useState(false);
+	const [csvUploaded, setCsvUploaded] = useState(false);
 
-	const handleFileChange = (e) => {
+	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
+		if (!uploadedFile) return;
 		setFile(uploadedFile);
-		setTimeout(() => {
-			setIsMounted(false);
-			setTimeout(() => {
-				setStep(2);
-				setIsMounted(true);
-			}, 500);
-		}, 2000);
-	};
+		console.log("CSV:", uploadedFile);
+		try {
+			// Build the form to be sent to the backend
+			const formData = new FormData();
+			formData.append("file", uploadedFile);
+			
+			const res = await fetch("http://localhost:8000/upload-CSV", {
+				method: "POST",
+				body: formData
+			});
+			const data = await res.json();
+			console.log("CSV uploaded:", data)
+			setCsvUploaded(true);
+			setSnapshotId(data.snapshot_id);
 
-	const handleUploadClick = () => {
-		document.getElementById("csvInput").click();
+			setTimeout(() => {
+				setIsMounted(false);
+				setTimeout(() => {
+					setStep(2);
+					setIsMounted(true);
+				}, 500);
+			}, 500);
+		} catch (err) {
+			console.log("Error:", err);
+		}
 	};
 
 	const handleSurveyChange = (e) => {
@@ -39,22 +65,29 @@ function InvestmentAdvisor() {
 	};
 
 	const handleSurveySubmit = async () => {
-		console.log("CSV:", file);
 		console.log("Survey:", surveyAnswers);
 		
 		try {
 			// Build the form to be sent to the backend
 			const formData = new FormData();
-			formData.append("file", file);
 			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
 			
-			const res = await fetch("http://localhost:8000/upload", {
+			const res = await fetch("http://localhost:8000/upload-survey", {
 				method: "POST",
 				body: formData
 			});
-
 			const data = await res.json();
-			console.log("Server response:", data)
+			console.log("Survey uploaded:", data);
+			setSurveySubmitted(true);
+			setSurveyId(data.survey_id);
+
+			setTimeout(() => {
+				setIsMounted(false);
+				setTimeout(() => {
+					setStep(3);
+					setIsMounted(true);
+				}, 500);
+			}, 500);
 		} catch (err) {
 			console.log("Error:", err);
 		}
@@ -64,6 +97,7 @@ function InvestmentAdvisor() {
 		<MKBox
 		minHeight="100vh"
 		display="flex"
+		flexDirection="column"
 		alignItems="center"
 		justifyContent="center"
 		sx={{
@@ -85,21 +119,33 @@ function InvestmentAdvisor() {
 			zIndex: 1,
 			}}
 		>
-		<Container maxWidth="sm">
+		<Container maxWidth="sm" 
+		sx={{
+			display: "flex",
+			flexDirection: "column",
+			alignItems: "center",
+			justifyContent: "center",
+		}}>
 			{step === 1 && (
-			<UploadCSV
-				file={file}
-				onFileChange={handleFileChange}
-				onUploadClick={handleUploadClick}
-			/>
+				<UploadCSV
+					file={file}
+					onFileChange={handleFileChange}
+				/>
 			)}
 			{step === 2 && (
-			<Survey
-				surveyAnswers={surveyAnswers}
-				onSurveyChange={handleSurveyChange}
-				onSurveySubmit={handleSurveySubmit}
-			/>
+				<Survey
+					surveyAnswers={surveyAnswers}
+					onSurveyChange={handleSurveyChange}
+					onSurveySubmit={handleSurveySubmit}
+					surveySubmitted={surveySubmitted}
+				/>
 			)}
+			{step === 3 && (
+				<RecommendationCard snapshotId={snapshotId} surveyId={surveyId} />
+			)}
+			<MKButton color="secondary" onClick={() => navigate("/services/view-investments/")}>
+				View Investments in Database
+			</MKButton>
 		</Container>
 		</MKBox>
 		</MKBox>
