@@ -27,24 +27,25 @@ function InvestmentAdvisor() {
 	});
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
+	const [csvLoading, setCsvLoading] = useState(false);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
 		if (!uploadedFile) return;
 		setFile(uploadedFile);
-		console.log("CSV:", uploadedFile);
+		setCsvLoading(true);
 		try {
 			// Build the form to be sent to the backend
 			const formData = new FormData();
 			formData.append("file", uploadedFile);
-			
+
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-CSV`, {
 				method: "POST",
 				body: formData
 			});
 			const data = await res.json();
-			console.log("CSV uploaded:", data)
 			setCsvUploaded(true);
+			setCsvLoading(false);
 			setSnapshotId(data.snapshot_id);
 
 			setTimeout(() => {
@@ -55,6 +56,7 @@ function InvestmentAdvisor() {
 				}, 500);
 			}, 500);
 		} catch (err) {
+			setCsvLoading(false);
 			console.log("Error:", err);
 		}
 	};
@@ -130,6 +132,7 @@ function InvestmentAdvisor() {
 				<UploadCSV
 					file={file}
 					onFileChange={handleFileChange}
+					loading={csvLoading}
 				/>
 			)}
 			{step === 2 && (
