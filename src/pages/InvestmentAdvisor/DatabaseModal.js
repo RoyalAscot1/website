@@ -39,7 +39,7 @@ function DatabaseModal({ open, onClose, snapshot }) {
 		setData([]);
 		if (open) {
 			// Fetch from backend
-			fetch(`http://localhost:8000/snapshots/${snapshot.id}/`)
+			fetch(`${process.env.REACT_APP_API_URL}/snapshots/${snapshot.id}/`)
 				.then((res) => {
 					if (!res.ok) throw new Error("Failed to fetch investments");
 					return res.json();

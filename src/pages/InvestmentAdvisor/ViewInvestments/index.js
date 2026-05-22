@@ -32,7 +32,7 @@ function ViewInvestments() {
     useEffect(() => {
         const fetchSnapshots = async () => {
             try {
-                const res = await fetch("http://localhost:8000/snapshots/");
+                const res = await fetch(`${process.env.REACT_APP_API_URL}/snapshots/`);
                 const data = await res.json();
                 setSnapshots(data);
             } catch (err) {

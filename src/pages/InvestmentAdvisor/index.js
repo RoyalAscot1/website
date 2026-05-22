@@ -38,7 +38,7 @@ function InvestmentAdvisor() {
 			const formData = new FormData();
 			formData.append("file", uploadedFile);
 			
-			const res = await fetch("http://localhost:8000/upload-CSV", {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-CSV`, {
 				method: "POST",
 				body: formData
 			});
@@ -72,7 +72,7 @@ function InvestmentAdvisor() {
 			const formData = new FormData();
 			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
 			
-			const res = await fetch("http://localhost:8000/upload-survey", {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-survey`, {
 				method: "POST",
 				body: formData
 			});
