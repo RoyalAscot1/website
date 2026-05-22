@@ -1,15 +1,11 @@
 from fastapi import APIRouter, File, UploadFile
 import pandas as pd
 import io
+from concurrent.futures import ThreadPoolExecutor
 
 from database import database
 from models import investment_snapshots, investments
-
-from services.yahoo_service import (
-    get_investment_name,
-    get_current_price,
-    get_beta
-)
+from services.yahoo_service import get_ticker_info
 
 router = APIRouter(prefix="/upload-CSV")
 
@@ -19,14 +15,17 @@ async def upload_csv(file: UploadFile = File(...)):
     # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
     df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
-    df["InvestmentName"] = df["TickerSymbol"].apply(get_investment_name)
-    df["CurrentPrice"] = df["TickerSymbol"].apply(get_current_price)
-    df["Beta"] = df["TickerSymbol"].apply(get_beta)
+
+    with ThreadPoolExecutor() as executor:
+        ticker_data = list(executor.map(get_ticker_info, df["TickerSymbol"]))
+
+    info_df = pd.DataFrame(ticker_data, index=df.index)
+    df = pd.concat([df, info_df], axis=1)
+
     df["TotalValue"] = df["QuantityHeld"] * df["CurrentPrice"]
     df["UnrealizedGainLoss"] = (df["CurrentPrice"] - df["AveragePurchasePrice"]) * df["QuantityHeld"]
-    df["Currency"] = "USD"  # default currency
-    df["AssetType"] = "Stock"  # infer dynamically later
-    print(df)
+    df["Currency"] = "USD"
+    df["AssetType"] = "Stock"
 
     # Create new snapshot record
     snapshot_query = investment_snapshots.insert().values(description="No description")
