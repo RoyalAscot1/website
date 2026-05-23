@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, HTTPException
 from database import database
 from models import surveys
 import os
 import json
-import pandas as pd
 
-# Import Gemini
 from google import genai
+from google.genai import errors as genai_errors
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Import analyze function
@@ -29,7 +28,7 @@ async def recommendations(input: str = Form(...)):
     survey = await database.fetch_one(query)
     
     if not survey:
-        return {"error": f"Survey with id {survey_id} not found"}
+        raise HTTPException(status_code=404, detail=f"Survey {survey_id} not found")
     
     survey_dict = dict(survey)
     survey_json = json.dumps(survey_dict)
@@ -59,9 +58,14 @@ Recommendations:
 Do not add any text after your last recommendation.
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-pro",
-        contents=prompt
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+    except genai_errors.ClientError as e:
+        raise HTTPException(status_code=502, detail=f"Gemini API error: {e.message}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error calling Gemini: {str(e)}")
 
     return {"gemini_response": response.text}

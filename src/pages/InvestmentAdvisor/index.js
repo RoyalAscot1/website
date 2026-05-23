@@ -27,24 +27,32 @@ function InvestmentAdvisor() {
 	});
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
+	const [csvLoading, setCsvLoading] = useState(false);
+	const [csvError, setCsvError] = useState(null);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
 		if (!uploadedFile) return;
 		setFile(uploadedFile);
-		console.log("CSV:", uploadedFile);
+		setCsvLoading(true);
+		setCsvError(null);
 		try {
 			// Build the form to be sent to the backend
 			const formData = new FormData();
 			formData.append("file", uploadedFile);
-			
-			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-CSV`, {
+
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-CSV/`, {
 				method: "POST",
 				body: formData
 			});
 			const data = await res.json();
-			console.log("CSV uploaded:", data)
+			if (!res.ok) {
+				setCsvError(data.detail || "Upload failed.");
+				setCsvLoading(false);
+				return;
+			}
 			setCsvUploaded(true);
+			setCsvLoading(false);
 			setSnapshotId(data.snapshot_id);
 
 			setTimeout(() => {
@@ -55,7 +63,8 @@ function InvestmentAdvisor() {
 				}, 500);
 			}, 500);
 		} catch (err) {
-			console.log("Error:", err);
+			setCsvLoading(false);
+			setCsvError("Could not reach the server. Please try again.");
 		}
 	};
 
@@ -72,7 +81,7 @@ function InvestmentAdvisor() {
 			const formData = new FormData();
 			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
 			
-			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-survey`, {
+			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-survey/`, {
 				method: "POST",
 				body: formData
 			});
@@ -130,6 +139,8 @@ function InvestmentAdvisor() {
 				<UploadCSV
 					file={file}
 					onFileChange={handleFileChange}
+					loading={csvLoading}
+					error={csvError}
 				/>
 			)}
 			{step === 2 && (

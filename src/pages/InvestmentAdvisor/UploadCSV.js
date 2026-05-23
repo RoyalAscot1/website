@@ -3,13 +3,14 @@ import MKBox from "components/MKBox";
 import MKTypography from "components/MKTypography";
 import MKButton from "components/MKButton";
 import Paper from "@mui/material/Paper";
+import CircularProgress from "@mui/material/CircularProgress";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-function UploadCSV({ file, onFileChange }) {
+function UploadCSV({ file, onFileChange, loading, error }) {
     const fileInputRef = useRef(null);
 
     const handleChooseClick = () => {
-        fileInputRef.current.click(); // open file picker
+        fileInputRef.current.click();
     };
 
     return (
@@ -34,21 +35,28 @@ function UploadCSV({ file, onFileChange }) {
                 accept=".csv"
                 style={{ display: "none" }}
                 ref={fileInputRef}
-                onChange={onFileChange} // triggers upload immediately
+                onChange={onFileChange}
             />
 
             <MKButton
                 color="info"
-                startIcon={<UploadFileIcon />}
+                startIcon={loading ? null : <UploadFileIcon />}
                 onClick={handleChooseClick}
+                disabled={loading}
                 sx={{ mb: 2 }}
             >
-            Choose CSV File
+                {loading ? <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} /> : null}
+                {loading ? "Fetching market data..." : "Choose CSV File"}
             </MKButton>
 
-            {file && (
+            {file && !loading && !error && (
             <MKTypography variant="body2" color="text.primary">
                 ✅ {file.name} uploaded successfully
+            </MKTypography>
+            )}
+            {error && (
+            <MKTypography variant="body2" color="error" mt={1}>
+                ❌ {error}
             </MKTypography>
             )}
         </Paper>

@@ -14,7 +14,7 @@ function RecommendationCard({ snapshotId, surveyId }) {
                 const formData = new FormData();
                 formData.append("input", JSON.stringify({ snapshotId, surveyId }));
 
-                const res = await fetch(`${process.env.REACT_APP_API_URL}/recommendations`, {
+                const res = await fetch(`${process.env.REACT_APP_API_URL}/recommendations/`, {
                     method: "POST",
                     body: formData,
                 });
