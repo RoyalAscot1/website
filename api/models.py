@@ -5,6 +5,7 @@ investment_snapshots = Table(
     "investment_snapshots",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", String, nullable=False),
     Column("uploaded_at", DateTime(timezone=True), server_default=func.now()),
     Column("description", String, nullable=True)
 )
@@ -30,6 +31,7 @@ surveys = Table(
     "surveys",
     metadata,
     Column("id", Integer, primary_key=True),
+    Column("user_id", String, nullable=False),
     Column("riskTolerance", Integer),        # 1–3
     Column("investmentHorizon", Integer),    # 1–3
     Column("lossCapacity", Integer),         # 1–3

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import Modal from "@mui/material/Modal";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -28,6 +29,7 @@ const modalStyle = {
 };
 
 function DatabaseModal({ open, onClose, snapshot }) {
+	const { getToken } = useAuth();
 	const [data, setData] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
@@ -38,9 +40,11 @@ function DatabaseModal({ open, onClose, snapshot }) {
 		setError(null);
 		setData([]);
 		if (open) {
-			// Fetch from backend
-			fetch(`${process.env.REACT_APP_API_URL}/snapshots/${snapshot.id}/`)
-				.then((res) => {
+			getToken().then((token) =>
+			fetch(`${process.env.REACT_APP_API_URL}/snapshots/${snapshot.id}/`, {
+					headers: { Authorization: `Bearer ${token}` },
+				})
+			).then((res) => {
 					if (!res.ok) throw new Error("Failed to fetch investments");
 					return res.json();
 				})

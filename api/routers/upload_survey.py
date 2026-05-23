@@ -1,22 +1,21 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Depends, Form
 import json
 
+from auth import get_current_user
 from database import database
 from models import surveys
 
 router = APIRouter(prefix="/upload-survey")
 
 @router.post("/")
-async def upload_survey(surveyAnswers: str = Form(...)):
-    # Handle survey data
-    # surveyAnswers is a form containing FOUR integers
+async def upload_survey(surveyAnswers: str = Form(...), user_id: str = Depends(get_current_user)):
     survey_data = json.loads(surveyAnswers)
-    print(survey_data)
     query = surveys.insert().values(
-        riskTolerance = survey_data.get("riskTolerance"),
-        investmentHorizon = survey_data.get("investmentHorizon"),
-        lossCapacity = survey_data.get("lossCapacity"),
-        investmentGoal = survey_data.get("investmentGoal"),
+        user_id=user_id,
+        riskTolerance=survey_data.get("riskTolerance"),
+        investmentHorizon=survey_data.get("investmentHorizon"),
+        lossCapacity=survey_data.get("lossCapacity"),
+        investmentGoal=survey_data.get("investmentGoal"),
     )
     survey_id = await database.execute(query)
 
