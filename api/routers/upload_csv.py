@@ -36,7 +36,7 @@ async def upload_csv(request: Request, file: UploadFile = File(...), user_id: st
     df["AveragePurchasePrice"] = pd.to_numeric(df["AveragePurchasePrice"], errors="coerce")
     df = df.reset_index(drop=True)
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         ticker_data = list(executor.map(get_ticker_info, df["TickerSymbol"]))
 
     info_df = pd.DataFrame(ticker_data, index=df.index)
