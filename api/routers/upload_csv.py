@@ -51,15 +51,15 @@ async def upload_csv(file: UploadFile = File(...)):
     df["Currency"] = "USD"
     df["AssetType"] = "Stock"
 
-    # Create new snapshot record
-    snapshot_query = investment_snapshots.insert().values(description="No description")
-    snapshot_id = await database.execute(snapshot_query)
-
-    # Upload df into investments table
     records = df.to_dict(orient="records")
-    for record in records:
-        record["snapshot_id"] = snapshot_id # Assign the returned snapshot id
-    await database.execute_many(query=investments.insert(), values=records)
+
+    async with database.transaction():
+        snapshot_query = investment_snapshots.insert().values(description="No description")
+        snapshot_id = await database.execute(snapshot_query)
+
+        for record in records:
+            record["snapshot_id"] = snapshot_id
+        await database.execute_many(query=investments.insert(), values=records)
 
     return {
         "message": "Uploaded investment snapshot",
