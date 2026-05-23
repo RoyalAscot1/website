@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from auth import get_current_user
 from database import database
 from models import investment_snapshots, surveys
+from limiter import limiter
 import os
 import json
 
@@ -17,7 +18,8 @@ router = APIRouter(prefix="/recommendations")
 
 
 @router.post("/")
-async def recommendations(input: str = Form(...), user_id: str = Depends(get_current_user)):
+@limiter.limit("5/minute")
+async def recommendations(request: Request, input: str = Form(...), user_id: str = Depends(get_current_user)):
     input_data = json.loads(input)
     snapshot_id = input_data.get("snapshotId")
     survey_id = input_data.get("surveyId")
