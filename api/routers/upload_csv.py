@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 import pandas as pd
 import io
 from concurrent.futures import ThreadPoolExecutor
 
 from auth import get_current_user
 from database import database
+from limiter import limiter
 from models import investment_snapshots, investments
 from services.yahoo_service import get_ticker_info
 
@@ -13,7 +14,8 @@ REQUIRED_COLUMNS = {"TickerSymbol", "QuantityHeld", "AveragePurchasePrice"}
 router = APIRouter(prefix="/upload-CSV")
 
 @router.post("/")
-async def upload_csv(file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
+@limiter.limit("3/minute")
+async def upload_csv(request: Request, file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
     # Handle CSV of investment snapshot
     # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
