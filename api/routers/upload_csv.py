@@ -10,15 +10,18 @@ from models import investment_snapshots, investments
 from services.yahoo_service import get_ticker_info
 
 REQUIRED_COLUMNS = {"TickerSymbol", "QuantityHeld", "AveragePurchasePrice"}
+MAX_CSV_BYTES = 5 * 1024 * 1024  # 5 MB
 
 router = APIRouter(prefix="/upload-CSV")
 
 @router.post("/")
 @limiter.limit("3/minute")
 async def upload_csv(request: Request, file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
-    # Handle CSV of investment snapshot
-    # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
+    if file.size is not None and file.size > MAX_CSV_BYTES:
+        raise HTTPException(status_code=413, detail="CSV exceeds 5 MB limit")
     contents = await file.read()
+    if len(contents) > MAX_CSV_BYTES:
+        raise HTTPException(status_code=413, detail="CSV exceeds 5 MB limit")
     df = pd.read_csv(io.StringIO(contents.decode("utf-8")), skipinitialspace=True)
 
     missing = REQUIRED_COLUMNS - set(df.columns)
@@ -36,7 +39,7 @@ async def upload_csv(request: Request, file: UploadFile = File(...), user_id: st
     df["AveragePurchasePrice"] = pd.to_numeric(df["AveragePurchasePrice"], errors="coerce")
     df = df.reset_index(drop=True)
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         ticker_data = list(executor.map(get_ticker_info, df["TickerSymbol"]))
 
     info_df = pd.DataFrame(ticker_data, index=df.index)

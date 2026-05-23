@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from limiter import limiter
 
 # Import PostgreSQL database
-from database import database, engine, metadata
+from database import database
 
 # Routers
 from routers.upload_csv import router as upload_csv_router
@@ -15,8 +15,6 @@ from routers.upload_survey import router as upload_survey_router
 from routers.snapshots import router as snapshots_router
 from routers.analyze import router as analyze_router
 from routers.recommendations import router as recommendations_router
-
-metadata.create_all(engine)
 
 app = FastAPI(title="Investment Advisor API")
 app.state.limiter = limiter

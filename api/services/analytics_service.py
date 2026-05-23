@@ -8,7 +8,7 @@ def compute_portfolio_analytics(df: pd.DataFrame):
     total_value = df["TotalValue"].sum()
     total_pl = df["UnrealizedGainLoss"].sum()
 
-    df["Weight"] = df["TotalValue"]/total_value
+    df["Weight"] = df["TotalValue"] / total_value if total_value else 0.0
     concentration = df[df["Weight"] > 0.40][["TickerSymbol", "Weight"]].to_dict(orient="records")
 
     def beta_to_volatility(beta):
