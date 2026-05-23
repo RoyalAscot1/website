@@ -5,7 +5,7 @@ import MKButton from "components/MKButton";
 import Paper from "@mui/material/Paper";
 import { Button, Stack } from "@mui/material";
 
-function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted }) {
+function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted, error }) {
     
     const makeHandler = (name, value) => ({
         target: { name, value }
@@ -114,6 +114,11 @@ function Survey({ surveyAnswers, onSurveyChange, onSurveySubmit, surveySubmitted
                 {surveySubmitted && (
                     <MKTypography variant="body2" color="success.main" mt={1} textAlign="center">
                         ✅ Survey submitted!
+                    </MKTypography>
+                )}
+                {error && (
+                    <MKTypography variant="body2" color="error" mt={1} textAlign="center">
+                        ❌ {error}
                     </MKTypography>
                 )}
             </Paper>

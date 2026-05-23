@@ -1,9 +1,11 @@
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 import pandas as pd
 import io
 from concurrent.futures import ThreadPoolExecutor
 
+from auth import get_current_user
 from database import database
+from limiter import limiter
 from models import investment_snapshots, investments
 from services.yahoo_service import get_ticker_info
 
@@ -12,7 +14,8 @@ REQUIRED_COLUMNS = {"TickerSymbol", "QuantityHeld", "AveragePurchasePrice"}
 router = APIRouter(prefix="/upload-CSV")
 
 @router.post("/")
-async def upload_csv(file: UploadFile = File(...)):
+@limiter.limit("3/minute")
+async def upload_csv(request: Request, file: UploadFile = File(...), user_id: str = Depends(get_current_user)):
     # Handle CSV of investment snapshot
     # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
@@ -51,15 +54,15 @@ async def upload_csv(file: UploadFile = File(...)):
     df["Currency"] = "USD"
     df["AssetType"] = "Stock"
 
-    # Create new snapshot record
-    snapshot_query = investment_snapshots.insert().values(description="No description")
-    snapshot_id = await database.execute(snapshot_query)
-
-    # Upload df into investments table
     records = df.to_dict(orient="records")
-    for record in records:
-        record["snapshot_id"] = snapshot_id # Assign the returned snapshot id
-    await database.execute_many(query=investments.insert(), values=records)
+
+    async with database.transaction():
+        snapshot_query = investment_snapshots.insert().values(description="No description", user_id=user_id)
+        snapshot_id = await database.execute(snapshot_query)
+
+        for record in records:
+            record["snapshot_id"] = snapshot_id
+        await database.execute_many(query=investments.insert(), values=records)
 
     return {
         "message": "Uploaded investment snapshot",

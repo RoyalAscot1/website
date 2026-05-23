@@ -3,6 +3,7 @@ import {
     Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Paper, Typography
 } from "@mui/material";
+import { useAuth } from "@clerk/clerk-react";
 import MKBox from "../../../components/MKBox";
 import MKButton from "../../../components/MKButton";
 import DatabaseModal from "../DatabaseModal";
@@ -13,7 +14,8 @@ function ViewInvestments() {
     useEffect(() => {
         setIsMounted(true);
     }, []);
-        
+
+    const { getToken } = useAuth();
     const [snapshots, setSnapshots] = useState([]);
     const [selectedSnapshot, setSelectedSnapshot] = useState(null);
     const [openModal, setOpenModal] = useState(false);
@@ -32,7 +34,10 @@ function ViewInvestments() {
     useEffect(() => {
         const fetchSnapshots = async () => {
             try {
-                const res = await fetch(`${process.env.REACT_APP_API_URL}/snapshots/`);
+                const token = await getToken();
+                const res = await fetch(`${process.env.REACT_APP_API_URL}/snapshots/`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 const data = await res.json();
                 setSnapshots(data);
             } catch (err) {
@@ -40,9 +45,8 @@ function ViewInvestments() {
             }
         };
         fetchSnapshots();
-    }, []);
+    }, [getToken]);
 
-    console.log(snapshots);
     return (
         <MKBox
             minHeight="100vh"

@@ -7,23 +7,25 @@ import Careers from "pages/Careers";
 
 const routes = [
 	{ name: "Home", route: "/", component: <LandingPage /> },
-  	{ name: "About", route: "/about", component: <About /> },
-  	{ 
+	{ name: "About", route: "/about", component: <About /> },
+	{
 		name: "Services",
-    	collapse: [
+		collapse: [
 			{
 				name: "Investment Advisor",
 				route: "/services/investment-advisor",
-				component: <InvestmentAdvisor />
+				component: <InvestmentAdvisor />,
+				protected: true,
 			},
 			{
 				name: "View Investments",
 				route: "/services/view-investments",
-				component: <ViewInvestments />
+				component: <ViewInvestments />,
+				protected: true,
 			}
-		]  
+		]
 	},
-  	{ name: "Careers", route: "/careers", component: <Careers /> },
+	{ name: "Careers", route: "/careers", component: <Careers /> },
 ];
 
 export default routes;

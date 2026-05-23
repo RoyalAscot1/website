@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import MKBox from "../../components/MKBox";
 import MKButton from "../../components/MKButton";
 import Container from "@mui/material/Container";
@@ -9,13 +10,13 @@ import RecommendationCard from "./RecommendationCard";
 
 function InvestmentAdvisor() {
 	const navigate = useNavigate();
+	const { getToken } = useAuth();
 	const [isMounted, setIsMounted] = useState(false);
 	useEffect(() => {
 		setIsMounted(true);
 	}, []);
 	const [step, setStep] = useState(1);
 
-	// Important data to remember
 	const [file, setFile] = useState(null);
 	const [snapshotId, setSnapshotId] = useState(null);
 	const [surveyId, setSurveyId] = useState(null);
@@ -29,6 +30,7 @@ function InvestmentAdvisor() {
 	const [csvUploaded, setCsvUploaded] = useState(false);
 	const [csvLoading, setCsvLoading] = useState(false);
 	const [csvError, setCsvError] = useState(null);
+	const [surveyError, setSurveyError] = useState(null);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
@@ -37,13 +39,14 @@ function InvestmentAdvisor() {
 		setCsvLoading(true);
 		setCsvError(null);
 		try {
-			// Build the form to be sent to the backend
+			const token = await getToken();
 			const formData = new FormData();
 			formData.append("file", uploadedFile);
 
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-CSV/`, {
 				method: "POST",
-				body: formData
+				headers: { Authorization: `Bearer ${token}` },
+				body: formData,
 			});
 			const data = await res.json();
 			if (!res.ok) {
@@ -74,19 +77,22 @@ function InvestmentAdvisor() {
 	};
 
 	const handleSurveySubmit = async () => {
-		console.log("Survey:", surveyAnswers);
-		
+		setSurveyError(null);
 		try {
-			// Build the form to be sent to the backend
+			const token = await getToken();
 			const formData = new FormData();
 			formData.append("surveyAnswers", JSON.stringify(surveyAnswers));
-			
+
 			const res = await fetch(`${process.env.REACT_APP_API_URL}/upload-survey/`, {
 				method: "POST",
-				body: formData
+				headers: { Authorization: `Bearer ${token}` },
+				body: formData,
 			});
 			const data = await res.json();
-			console.log("Survey uploaded:", data);
+			if (!res.ok) {
+				setSurveyError(data.detail || "Survey submission failed.");
+				return;
+			}
 			setSurveySubmitted(true);
 			setSurveyId(data.survey_id);
 
@@ -98,7 +104,7 @@ function InvestmentAdvisor() {
 				}, 500);
 			}, 500);
 		} catch (err) {
-			console.log("Error:", err);
+			setSurveyError("Could not reach the server. Please try again.");
 		}
 	};
 
@@ -128,7 +134,7 @@ function InvestmentAdvisor() {
 			zIndex: 1,
 			}}
 		>
-		<Container maxWidth="sm" 
+		<Container maxWidth="sm"
 		sx={{
 			display: "flex",
 			flexDirection: "column",
@@ -149,6 +155,7 @@ function InvestmentAdvisor() {
 					onSurveyChange={handleSurveyChange}
 					onSurveySubmit={handleSurveySubmit}
 					surveySubmitted={surveySubmitted}
+					error={surveyError}
 				/>
 			)}
 			{step === 3 && (
