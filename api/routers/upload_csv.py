@@ -39,6 +39,13 @@ async def upload_csv(file: UploadFile = File(...)):
     info_df = pd.DataFrame(ticker_data, index=df.index)
     df = pd.concat([df, info_df], axis=1)
 
+    bad_tickers = df[df["CurrentPrice"].isna()]["TickerSymbol"].tolist()
+    if bad_tickers:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Could not fetch market data for: {bad_tickers}. Check the ticker symbols and try again."
+        )
+
     df["TotalValue"] = df["QuantityHeld"] * df["CurrentPrice"]
     df["UnrealizedGainLoss"] = (df["CurrentPrice"] - df["AveragePurchasePrice"]) * df["QuantityHeld"]
     df["Currency"] = "USD"

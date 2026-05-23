@@ -6,7 +6,7 @@ import Paper from "@mui/material/Paper";
 import CircularProgress from "@mui/material/CircularProgress";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-function UploadCSV({ file, onFileChange, loading }) {
+function UploadCSV({ file, onFileChange, loading, error }) {
     const fileInputRef = useRef(null);
 
     const handleChooseClick = () => {
@@ -49,9 +49,14 @@ function UploadCSV({ file, onFileChange, loading }) {
                 {loading ? "Fetching market data..." : "Choose CSV File"}
             </MKButton>
 
-            {file && !loading && (
+            {file && !loading && !error && (
             <MKTypography variant="body2" color="text.primary">
                 ✅ {file.name} uploaded successfully
+            </MKTypography>
+            )}
+            {error && (
+            <MKTypography variant="body2" color="error" mt={1}>
+                ❌ {error}
             </MKTypography>
             )}
         </Paper>

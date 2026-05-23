@@ -28,12 +28,14 @@ function InvestmentAdvisor() {
 	const [surveySubmitted, setSurveySubmitted] = useState(false);
 	const [csvUploaded, setCsvUploaded] = useState(false);
 	const [csvLoading, setCsvLoading] = useState(false);
+	const [csvError, setCsvError] = useState(null);
 
 	const handleFileChange = async (e) => {
 		const uploadedFile = e.target.files[0];
 		if (!uploadedFile) return;
 		setFile(uploadedFile);
 		setCsvLoading(true);
+		setCsvError(null);
 		try {
 			// Build the form to be sent to the backend
 			const formData = new FormData();
@@ -44,6 +46,11 @@ function InvestmentAdvisor() {
 				body: formData
 			});
 			const data = await res.json();
+			if (!res.ok) {
+				setCsvError(data.detail || "Upload failed.");
+				setCsvLoading(false);
+				return;
+			}
 			setCsvUploaded(true);
 			setCsvLoading(false);
 			setSnapshotId(data.snapshot_id);
@@ -57,7 +64,7 @@ function InvestmentAdvisor() {
 			}, 500);
 		} catch (err) {
 			setCsvLoading(false);
-			console.log("Error:", err);
+			setCsvError("Could not reach the server. Please try again.");
 		}
 	};
 
@@ -133,6 +140,7 @@ function InvestmentAdvisor() {
 					file={file}
 					onFileChange={handleFileChange}
 					loading={csvLoading}
+					error={csvError}
 				/>
 			)}
 			{step === 2 && (
