@@ -9,8 +9,16 @@ import json
 from google import genai
 from google.genai import errors as genai_errors
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-_gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+_gemini_client: genai.Client | None = None
+
+def _get_gemini_client() -> genai.Client:
+    global _gemini_client
+    if _gemini_client is None:
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY is not set")
+        _gemini_client = genai.Client(api_key=api_key)
+    return _gemini_client
 
 from routers.analyze import analyze_snapshot
 
@@ -71,7 +79,7 @@ Do not add any text after your last recommendation.
 """
 
     try:
-        response = _gemini_client.models.generate_content(
+        response = _get_gemini_client().models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
