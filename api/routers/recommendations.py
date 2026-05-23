@@ -60,7 +60,7 @@ Do not add any text after your last recommendation.
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-flash",
             contents=prompt
         )
     except genai_errors.ClientError as e:

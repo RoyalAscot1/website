@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 import pandas as pd
 import io
 from concurrent.futures import ThreadPoolExecutor
@@ -7,6 +7,8 @@ from database import database
 from models import investment_snapshots, investments
 from services.yahoo_service import get_ticker_info
 
+REQUIRED_COLUMNS = {"TickerSymbol", "QuantityHeld", "AveragePurchasePrice"}
+
 router = APIRouter(prefix="/upload-CSV")
 
 @router.post("/")
@@ -14,7 +16,22 @@ async def upload_csv(file: UploadFile = File(...)):
     # Handle CSV of investment snapshot
     # CSV upload format: TickerSymbol, QuantityHeld, AveragePurchasePrice
     contents = await file.read()
-    df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+    df = pd.read_csv(io.StringIO(contents.decode("utf-8")), skipinitialspace=True)
+
+    missing = REQUIRED_COLUMNS - set(df.columns)
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"CSV is missing required columns: {missing}. "
+                   f"Got: {list(df.columns)}"
+        )
+
+    # Keep only the 3 expected columns so extra CSV columns (e.g. CurrentPrice)
+    # don't create duplicate column names after the yfinance concat below.
+    df = df[["TickerSymbol", "QuantityHeld", "AveragePurchasePrice"]].copy()
+    df["QuantityHeld"] = pd.to_numeric(df["QuantityHeld"], errors="coerce")
+    df["AveragePurchasePrice"] = pd.to_numeric(df["AveragePurchasePrice"], errors="coerce")
+    df = df.reset_index(drop=True)
 
     with ThreadPoolExecutor() as executor:
         ticker_data = list(executor.map(get_ticker_info, df["TickerSymbol"]))
