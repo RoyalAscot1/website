@@ -24,11 +24,16 @@ function RecommendationCard({ snapshotId, surveyId }) {
                     headers: { Authorization: `Bearer ${token}` },
                     body: formData,
                 });
-                const data = await res.json();
                 if (!res.ok) {
-                    setError(data.detail || "Failed to load recommendations.");
+                    let detail = "Failed to load recommendations.";
+                    try {
+                        const errData = await res.json();
+                        detail = errData.detail || detail;
+                    } catch {}
+                    setError(detail);
                     return;
                 }
+                const data = await res.json();
                 setRecommendation(data.gemini_response);
             } catch (err) {
                 setError("Could not reach the server. Please try again.");
